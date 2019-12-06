@@ -11,9 +11,11 @@ import pygame
 class Field:
     def __init__(self, *content):
         if content == ():
+            #print(content)
             self.content = None
         else:
-            if isinstance(content[0], ShipPart):
+            #print(content[0])
+            if isinstance(content[0], Part_of_ship):
                 self.content = content[0]
             else:
                 raise TypeError
@@ -21,7 +23,7 @@ class Field:
     def open(self):
         self.is_open = True
 
-class ShipPart:
+class Part_of_ship:
     def __init__(self, ship):
         self.ship = ship
 
@@ -37,39 +39,40 @@ class Ship:
         else:#if direction = 0
             self.location = [[start[0], start[1] + x] for x in range(size)]
         for coords in self.location:
-            if not sea.is_valid_coord(*coords):
+            if sea.is_valid_coord(*coords) is False:
                 raise IndexError
-            if isinstance(sea[coords].content, ShipPart):
+            if isinstance(sea[coords].content, Part_of_ship) is True:
                 raise PlacementError
         for coords in self.location:
-            sea[coords] = Field(ShipPart(self))
+            sea[coords] = Field(Part_of_ship(self))
     def is_sunk(self):
         return all([self.sea[coords].is_open for coords in self.location])
 
-class Sea:#gameboard
+class Sea:#玩家和电脑各自的老家
     def __init__(self, size=10):
         self.size = size
-        self.board = [[Field() for i in range(size)] for i in range(size)]
-    def __getitem__(self, index):
+        self.grid = [[Field() for i in range(size)] for i in range(size)]
+        #[[Field() for i in range(10)] for i in range(10)], content = None
+        #生成空的10*10的list o list
+
+    def __getitem__(self, index):#make 'Sea' object is subscriptable
         if index[0] < 0 or index[0] >= self.size:
             raise IndexError
         if index[1] < 0 or index[1] >= self.size:
             raise IndexError
-        return self.board[index[0]][index[1]]
-    def __setitem__(self, index, value):
+        return self.grid[index[0]][index[1]]
+    def __setitem__(self, index, value):#make 'Sea' object is subscriptable
         if index[0] < 0 or index[0] >= self.size:
             raise IndexError
         if index[1] < 0 or index[1] >= self.size:
             raise IndexError
-        self.board[index[0]][index[1]] = value
-    def is_valid_coord(self, row, column):
-        return 0 <= row < self.size and 0 <= column < self.size
+        self.grid[index[0]][index[1]] = value  
     def represent(self):
         rep = ""
         for i in range(self.size):
             for j in range(self.size):
-                if self.board[i][j].is_open:
-                    if isinstance(self.board[i][j].content, ShipPart):
+                if self.grid[i][j].is_open:
+                    if isinstance(self.grid[i][j].content, Part_of_ship):
                         rep += "Y "
                     else:
                         rep += "N "
@@ -78,9 +81,12 @@ class Sea:#gameboard
             rep += "\n"
         return rep
 
-class Player:
+    def is_valid_coord(self, row, column):
+        return 0 <= row < self.size and 0 <= column < self.size
+
+class Player:#Player(10,5)
     def __init__(self, size, ships_count):
-        self.sea = Sea(size)#sea = class variable; Sea = class object
+        self.sea = Sea(size)#sea = class variable; Sea = class object, Sea(10)
         self.ships = []
         self.ready = False
         self.ships_count = ships_count
@@ -113,47 +119,48 @@ def draw_put_ships_board(width, height):
     pygame.draw.rect(screen,COLORS[5],[pos[0] - dim/2,pos[1] - dim/2,width*(dim+gap),height*(dim+gap)])
     pygame.display.update()
     
-def place_ship():
-    ships = [2, 3, 3, 4, 5]
-    direction = 0
-    while ships != []:
-        ship_size = [ships[-1], 1]
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                direction = 1 - direction
-            draw_put_ships_board(ship_size[direction], ship_size[1-direction])
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                position = pygame.mouse.get_pos()
-                if put_one_ship(player1, position, ships[-1], direction, grid1):
-                    ships.pop()
-                    
-def put_one_ship(new_player, position, ship, direction, grid1):
+def player_put_one_ship(new_player, position, shipsize, direction, grid1):
+    print(shipsize)
     column = position[0] // (dim + gap)# // 相除取整数
     row = position[1] // (dim + gap)
     if column < 10 and row < 10:
         try:
-            new_player.put_ship(ship, [row, column], direction)
+            new_player.put_ship(shipsize, [row, column], direction)
             for coords in new_player.ships[-1].location:
                 grid1[coords[0]][coords[1]] = 5
             return True
         except IndexError:
-            print("You are out of the sea , please stay inside")
+            print("You are out of your own sea, please stay inside")
             return False
         except PlacementError:
             print("This place is already filled")
             return False
     else:
         try:
-            new_player.put_ship(ship, [row, column], direction)
+            new_player.put_ship(shipsize, [row, column], direction)
             for coords in new_player.ships[-1].location:
                 grid1[coords[0]][coords[1]] = 5
             return True
         except IndexError:
-            print("You are out of the sea, please stay inside")
-
+            print("You are out of your own sea, please stay inside")
+    
+def player_place_ship(player):
+    ship_sizes = [2, 3, 3, 4, 5]
+    direction = 0
+    while ship_sizes != []:
+        ship_size = [ship_sizes[-1], 1]
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                direction = 1 - direction
+            draw_put_ships_board(ship_size[direction], ship_size[1-direction])
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                position = pygame.mouse.get_pos()
+                if player_put_one_ship(player1, position, ship_sizes[-1], direction, grid1):
+                    ship_sizes.pop()
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+                    
     
 if __name__ == "__main__":
     #Set up the colors    
@@ -192,7 +199,7 @@ if __name__ == "__main__":
     while running:
         draw_board()
         #pygame.display.update()
-        place_ship()
+        player_place_ship(player1)
         pygame.display.update()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
