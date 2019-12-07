@@ -318,13 +318,20 @@ def computer_turn(player1, sea1, grid1, grid2, positions, ship_hitted):
 def game_result(winner):
     
     if winner == player1:
-        print("Congratulations! You beat my artificial idoit!")
+        font = pygame.font.Font('freesansbold.ttf',16)
+        result = font.render('Congratulations! You beat my artificial idoit!', True, (255,255,255))
+        screen.blit(result, (285,325))
+        pygame.display.update()
+        #font.blit(result, (350, 350))
+        #print("Congratulations! You beat my artificial idoit!")
         
     if winner == computer:
-        print("Sorry, hope you will win next time.")
-    
-        
-    
+        font = pygame.font.Font('freesansbold.ttf',16)
+        result = font.render('Sorry, hope you will win next time.', True, (255,255,255))
+        screen.blit(result, (350,350))
+        pygame.display.update()        
+        #print("Sorry, hope you will win next time.")
+
 if __name__ == "__main__":
     #Set up the colors    
     WHITE = (255, 255, 255)
@@ -385,6 +392,7 @@ if __name__ == "__main__":
                     player_make_move(position, sea2, grid2, grid1)
                     if computer.check_ships():
                         game_result(player1)
+                        break
                     player_turn = False
                     #draw_board()
         while player_turn is False:
@@ -397,6 +405,7 @@ if __name__ == "__main__":
                 [ship_hitted, positions] = deepcopy(computer_turn(player1, sea1, grid1, grid2, positions, ship_hitted))
                 if player1.check_ships():
                     game_result(computer)
+                    break
                 player_turn = True
                     
         for event in pygame.event.get():
