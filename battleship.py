@@ -109,7 +109,7 @@ class PlacementError(Exception):
 
 def draw_board():
     #print('board is drawing')
-    screen.fill(COLORS[6])#single_player.screen = pygame.display.set_mode(dimension)
+    screen.fill(COLORS[4])#single_player.screen = pygame.display.set_mode(dimension)
     for row in range(len(grid1)):
         for column in range(len(grid1[row])):
             pygame.draw.rect(screen,COLORS[grid1[row][column]],[(gap+dim)*column+gap,(gap+dim)*row+gap,dim,dim])
@@ -120,7 +120,7 @@ def draw_board():
 def draw_put_ships_board(width, height):
     draw_board()
     pos = pygame.mouse.get_pos()
-    pygame.draw.rect(screen,COLORS[5],[pos[0] - dim/2,pos[1] - dim/2,width*(dim+gap),height*(dim+gap)])
+    pygame.draw.rect(screen,COLORS[3],[pos[0] - dim/2,pos[1] - dim/2,width*(dim+gap),height*(dim+gap)])
     pygame.display.update()
     
 def player_put_one_ship(new_player, position, shipsize, direction, grid1):
@@ -131,7 +131,7 @@ def player_put_one_ship(new_player, position, shipsize, direction, grid1):
         try:
             new_player.put_ship(shipsize, [row, column], direction)
             for coords in new_player.ships[-1].location:
-                grid1[coords[0]][coords[1]] = 5
+                grid1[coords[0]][coords[1]] = 3
             return True
         except IndexError:
             print("You are out of your own sea, please stay inside")
@@ -325,16 +325,14 @@ def computer_turn(player1, sea1, grid1, grid2, positions, ship_hitted):
     
 if __name__ == "__main__":
     #Set up the colors    
-    BLACK = (0, 0, 0)
     WHITE = (255, 255, 255)
-    GREEN = (0, 255, 0)
     RED = (255, 0, 0)
-    BLUE = (0, 0, 255)
+    GREEN = (0, 255, 0)   
     GREY = (100, 100, 100)
-    ORANGE = (255, 165, 0)
-    DARKBLUE = (0, 0, 128)
+    BLACK = (0, 0, 0)
+    
 
-    COLORS = {0: WHITE,1: RED,2: GREEN,3: ORANGE,4: DARKBLUE,5: GREY,6: BLACK,7: BLUE}
+    COLORS = {0: WHITE,1: RED,2: GREEN,3: GREY,4: BLACK}
     #set up the information for player1 and computer
     player1 = Player(10, 5)#size = 10, shipscount = 5, class object
     sea1 = player1.sea#set up the sea (home) for player1, class object
@@ -393,7 +391,6 @@ if __name__ == "__main__":
                     exit()
                 [ship_hitted, positions] = deepcopy(computer_turn(player1, sea1, grid1, grid2, positions, ship_hitted))
                 player_turn = True
-                #player_turn = computer_turn(player1, sea1, grid1, grid2, positions)
                     
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
