@@ -12,13 +12,14 @@ from itertools import permutations
 from copy import deepcopy
 
 class Field:
+    '''
+    A Field object contains the information of each player's grids.
+    '''
     def __init__(self, *content):
         if content == ():
-            #print(content)
             self.content = None
         else:
-            #print(content[0])
-            if isinstance(content[0], Part_of_ship):
+            if isinstance(content[0], Part_of_ship) is True:
                 self.content = content[0]
             else:
                 raise TypeError
@@ -27,13 +28,35 @@ class Field:
         self.is_open = True
 
 class Part_of_ship:
+    '''
+    A Part of ship object, latter being called to check whether a position 
+    selected is a part of ship.
+    
+    **Parameters**
+    
+        None
+        
+    **Returns**
+
+        None     
+    '''
     def __init__(self, ship):
         self.ship = ship
 
-    #def is_part_of_sunk_ship(self):
-        #return self.ship.is_sunk()
 
 class Ship:
+    '''
+    A Ship object has the property to check the valid grid when placing the
+    ships and check if the ship is sunk.
+    
+    **Parameters**
+    
+        None
+        
+    **Returns**
+
+        None     
+    '''    
     def __init__(self, size, sea, start, direction):
         self.size = size
         self.sea = sea
@@ -51,43 +74,39 @@ class Ship:
     def is_sunk(self):
         return all([self.sea[coords].is_open for coords in self.location])
 
-class Sea:#玩家和电脑各自的老家
+class Sea:
+    '''
+    A Field object contains the information of each player's grids on screen.
+    '''
     def __init__(self, size=10):
         self.size = size
         self.grid = [[Field() for i in range(size)] for i in range(size)]
         #[[Field() for i in range(10)] for i in range(10)], content = None
-        #生成空的10*10的list o list
-
+        
+    
     def __getitem__(self, index):#make 'Sea' object is subscriptable
         if index[0] < 0 or index[0] >= self.size:
             raise IndexError
         if index[1] < 0 or index[1] >= self.size:
             raise IndexError
         return self.grid[index[0]][index[1]]
-    def __setitem__(self, index, value):#make 'Sea' object is subscriptable
+    
+    def __setitem__(self, index, value):#make 'Sea' object support item assignment
         if index[0] < 0 or index[0] >= self.size:
             raise IndexError
         if index[1] < 0 or index[1] >= self.size:
             raise IndexError
-        self.grid[index[0]][index[1]] = value  
-    def represent(self):
-        rep = ""
-        for i in range(self.size):
-            for j in range(self.size):
-                if self.grid[i][j].is_open:
-                    if isinstance(self.grid[i][j].content, Part_of_ship):
-                        rep += "Y "
-                    else:
-                        rep += "N "
-                else:
-                    rep += "X "
-            rep += "\n"
-        return rep
-
+        self.grid[index[0]][index[1]] = value
+    
     def is_valid_coord(self, row, column):
         return 0 <= row < self.size and 0 <= column < self.size
 
-class Player:#Player(10,5)
+class Player:
+    '''
+    A Player object contains the information of each player's ships.
+    Has the property to put the ship in a specific coordinate
+    and check if the all ship is sunk or not.
+    '''
     def __init__(self, size, ships_count):
         self.sea = Sea(size)#sea = class variable; Sea = class object, Sea(10)
         self.ships = []
@@ -108,26 +127,72 @@ class PlacementError(Exception):
     pass
 
 def draw_board():
-    #print('board is drawing')
-    screen.fill(COLORS[4])#single_player.screen = pygame.display.set_mode(dimension)
+    '''
+    The function used to draw the main game screen.
+    
+    **Parameters**
+    
+        None
+        
+    **Returns**
+
+        None     
+    '''    
+    screen.fill(COLORS[4])
     comment = pygame.image.load("comment.png")
     screen.blit(comment, (0, 324))
-    for row in range(len(grid1)):
-        for column in range(len(grid1[row])):
+    for row in range(10):
+        for column in range(10):
             pygame.draw.rect(screen,COLORS[grid1[row][column]],[(gap+dim)*column+gap,(gap+dim)*row+gap,dim,dim])
-    for row in range(len(grid2)):
-        for column in range(len(grid2[row])):
+    for row in range(10):
+        for column in range(10):
             pygame.draw.rect(screen,COLORS[grid2[row][column]],[(gap+dim)*(column+13)+gap,(gap+dim)*row+gap,dim,dim])
+
+    font = pygame.font.Font('freesansbold.ttf',16)
+    player1_sea = font.render('Player1\'s Sea', True, (255,255,255))
+    computer_sea = font.render('Computer\'s Sea', True, (255,255,255))
+    screen.blit(player1_sea, (80,295))
+    screen.blit(computer_sea, (440,295))
             
-def draw_put_ships_board(width, height):
+def draw_unput_ships(length, width):
+    '''
+    The function used to draw the ships on screen which dragged by mouse but 
+    haven't placed down yet.
+    
+    **Parameters**
+    
+        length: the length of a ship
+        width: the width of a ship
+        
+    **Returns**
+
+        None     
+    '''        
     draw_board()
-    pos = pygame.mouse.get_pos()
-    pygame.draw.rect(screen,COLORS[3],[pos[0] - dim/2,pos[1] - dim/2,width*(dim+gap),height*(dim+gap)])
+    position = pygame.mouse.get_pos()
+    pygame.draw.rect(screen,COLORS[3],[position[0] - dim/2,position[1] - dim/2,length*(dim+gap),width*(dim+gap)])
     pygame.display.update()
     
 def player_put_one_ship(new_player, position, shipsize, direction, grid1):
+    '''
+    The function used to change the numbers (representing the colors) 
+    in grid1 (10*10 list of lists). Also used to check wether the player
+    placed the ship on a valid place.
+    
+    **Parameters**
+    
+        new_player: *player object*
+        position: *list, int*, the position get from mouse.
+        shipsize: *int*, the length of a ship
+        direction: *int*, 0 = horizontal, 1 = vertical
+        grid1: *list, list*
+        
+    **Returns**
+
+        True of False 
+    '''    
     #print(shipsize)
-    column = position[0] // (dim + gap)# // 相除取整数
+    column = position[0] // (dim + gap)# // 
     row = position[1] // (dim + gap)
     if column < 10 and row < 10:
         try:
@@ -152,6 +217,20 @@ def player_put_one_ship(new_player, position, shipsize, direction, grid1):
             return False
     
 def player_place_ship(player):
+    '''
+    The function used to draw the ships on screen which placed by clicking
+    the mouse buttondown. The direction of a ship (horizontal or vertical)
+    before placed could be changed by clicking any key on the key board.
+    
+    **Parameters**
+    
+        player: *Class object*, contains the information of player's ship.
+        
+    **Returns**
+
+        None  
+    '''    
+
     print('player is placing')
     ship_sizes = [2, 3, 3, 4, 5]
     direction = 0
@@ -160,7 +239,7 @@ def player_place_ship(player):
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 direction = 1 - direction
-            draw_put_ships_board(ship_size[direction], ship_size[1-direction])
+            draw_unput_ships(ship_size[direction], ship_size[1-direction])
             if event.type == pygame.MOUSEBUTTONDOWN:
                 position = pygame.mouse.get_pos()
                 if player_put_one_ship(player1, position, ship_sizes[-1], direction, grid1) is True:
@@ -170,13 +249,26 @@ def player_place_ship(player):
                 exit()
 
 def find_valid_place(position, ship_size, direction, sea2):#电脑检查是否可以放船
+    '''
+    The function for computer check the valid grid to place the ships.
+    
+    **Parameters**
+    
+        position: *list, int*, row and column both in range(10)
+        shipsize: *int*, the length of a ship
+        direction: *int*, 0 = horizontal, 1 = vertical
+        sea2: *Class object*, the board for computer.
+        
+    **Returns**
 
+        True of False 
+    '''    
     if direction == 0:
         for i in range(ship_size):
             if position[1] + i > 9:
                 return False
             else:
-                if sea2[[position[0], position[1] + i]].content:# if = 1, already placed
+                if sea2[[position[0], position[1] + i]].content:# if is True, already placed
                     return False
         return True
     else:#if direction = 1
@@ -184,11 +276,22 @@ def find_valid_place(position, ship_size, direction, sea2):#电脑检查是否�
             if position[0] + i > 9:
                 return False
             else:
-                if sea2[[position[0] + i, position[1]]].content:# if = 1, already placed
+                if sea2[[position[0] + i, position[1]]].content:# if is True, already placed
                     return False
         return True
 
-def computer_place_ship(computer):#电脑放船， 一次性放所有船
+def computer_place_ship(computer):
+    '''
+    The function for computer to randomly place the ships on the valid grids.
+    
+    **Parameters**
+    
+        computer: *Class object*, contains the information of computer's ship.
+        
+    **Returns**
+
+        None
+    '''  
     print('computer is placing')
     ship_sizes = [2,3,3,4,5]
 
@@ -205,7 +308,21 @@ def computer_place_ship(computer):#电脑放船， 一次性放所有船
         computer.put_ship(position[0], position[1], position[2])
     
 
-def player_make_move(position, sea2, grid2, grid1):#玩家炸船
+def player_make_move(position, sea2, grid2):
+    '''
+    The function for player to choose a grid on computer's sea to blow up
+    by clicking the mouse.
+    
+    **Parameters**
+    
+        position: *list, int*, the position get from mouse clicking.
+        sea2: *class, obejct*, the board for computer.
+        grid2: *list, list*, the grid for computer.
+        
+    **Returns**
+
+        None
+    '''    
     #player_turn = True
     column = position[0] // (dim + gap) - 13
     row = position[1] // (dim + gap)
@@ -215,7 +332,6 @@ def player_make_move(position, sea2, grid2, grid1):#玩家炸船
             grid2[row][column] = 1
         else:
             grid2[row][column] = 2
-        #draw_board(grid1, grid2)
         draw_board()
         pygame.display.update()
         if grid2[row][column] == 1:
@@ -224,6 +340,20 @@ def player_make_move(position, sea2, grid2, grid1):#玩家炸船
             print('You missed!')                 
 
 def generate_positions(x,y):
+    '''
+    The function to generation all possible coordinates on player's sea
+    for computer.
+    
+    **Parameters**
+    
+        x:*int*
+        y:*int*
+        
+    **Returns**
+
+        positions:*list, list*, list of lists of int contains all 
+        possible coordinates.
+    '''    
     size = range(x,y)
     position = permutations(size, 2)
     positions = []
@@ -235,10 +365,34 @@ def generate_positions(x,y):
     return positions
 
 def intersection_list_of_list(list1, list2):
+    '''
+    The function to generation the intersection for two list.
+    
+    **Parameters**
+    
+        list1:*list*
+        list2:*list*
+        
+    **Returns**
+
+        list3:*list*
+    '''    
     list3 = [sublist for sublist in list1 if sublist in list2]
     return list3
 
 def subtract_hitted_position(positions, ship_hitted):
+    '''
+    The function to remove the position once chosen by computer.
+    
+    **Parameters**
+    
+        positions:*list*
+        ship_hitted:*list*
+        
+    **Returns**
+
+        new_positions:*list*
+    '''    
     #print(positions)
     #print(ship_hitted[-1])
     new_positions = []
@@ -250,6 +404,19 @@ def subtract_hitted_position(positions, ship_hitted):
             
 
 def find_valid_neighbor(positions, ship_hitted):
+    '''
+    The function for computer to find all possible valid neighbor
+    based on the last hitted position.
+    
+    **Parameters**
+    
+        positions:*list*
+        ship_hitted:*list*
+        
+    **Returns**
+
+        valid_neighbor:*list*
+    '''  
     valid_neighbor = []
     if len(ship_hitted) == 0:
         valid_neighbor = []
@@ -264,7 +431,22 @@ def find_valid_neighbor(positions, ship_hitted):
     
 
 
-def computer_turn(player1, sea1, grid1, grid2, positions, ship_hitted):
+def computer_turn(sea1, grid1, positions, ship_hitted):
+    '''
+    The function for computer to choose a grid on computer's sea to blow up.
+    
+    **Parameters**
+    
+        sea1:*class, obejct*, the board for player1.
+        grid1:*list, list*, the grid for player1.
+        positions:*list, list*
+        ship_hitted:*list, list*
+        
+    **Returns**
+
+        ship_hitted:*list, list*
+        positions:*list, list*
+    '''  
     ship_missed = []
     valid_neighbor = find_valid_neighbor(positions, ship_hitted)
     
@@ -282,8 +464,6 @@ def computer_turn(player1, sea1, grid1, grid2, positions, ship_hitted):
         if grid1[row][column] == 1:
             print('Computer hitted!')
             ship_hitted.append([row, column])
-            #print("1")
-            #print(ship_hitted)
             positions = deepcopy(subtract_hitted_position(positions, ship_hitted))
         if grid1[row][column] == 2:
             print('Computer missed!')
@@ -304,10 +484,7 @@ def computer_turn(player1, sea1, grid1, grid2, positions, ship_hitted):
         pygame.display.update()
         if grid1[row][column] == 1:
             print('Computer hitted!')
-            #print([row,column])
             ship_hitted.append([row, column])
-            #print('2')
-            #print(ship_hitted)
             positions = deepcopy(subtract_hitted_position(positions, ship_hitted))
         if grid1[row][column] == 2:
             print('Computer missed!')
@@ -316,51 +493,60 @@ def computer_turn(player1, sea1, grid1, grid2, positions, ship_hitted):
         return [ship_hitted, positions]
     
 def game_result(winner):
+    '''
+    The function to show the game result when game is finish.
+    
+    **Parameters**
+    
+        winner:*class object*, 
+        player1 or computer who first blow up all the ships.
+        
+    **Returns**
+
+        None
+    '''  
     
     if winner == player1:
         font = pygame.font.Font('freesansbold.ttf',16)
-        result = font.render('Congratulations! You beat my artificial idoit!', True, (255,255,255))
+        result = font.render('Congratulations! You beat my artificial idiot!', True, (255,255,255))
         screen.blit(result, (285,325))
         pygame.display.update()
-        #font.blit(result, (350, 350))
-        #print("Congratulations! You beat my artificial idoit!")
         
     if winner == computer:
         font = pygame.font.Font('freesansbold.ttf',16)
         result = font.render('Sorry, hope you will win next time.', True, (255,255,255))
         screen.blit(result, (350,350))
         pygame.display.update()        
-        #print("Sorry, hope you will win next time.")
 
 if __name__ == "__main__":
-    #Set up the colors    
+    
+    #Set up the colors used in this game   
     WHITE = (255, 255, 255)
     RED = (255, 0, 0)
     GREEN = (0, 255, 0)   
     GREY = (100, 100, 100)
-    BLACK = (0, 0, 0)
-    
-
+    BLACK = (0, 0, 0)    
     COLORS = {0: WHITE,1: RED,2: GREEN,3: GREY,4: BLACK}
-    #set up the information for player1 and computer
+    
+    #set up the informations for player1 and computer
     player1 = Player(10, 5)#size = 10, shipscount = 5, class object
-    sea1 = player1.sea#set up the sea (home) for player1, class object
+    sea1 = player1.sea#set up the sea for player1, class object
     computer = Player(10,5)
     sea2 = computer.sea
     
+    #generate the list of positions and ship_hitted for computer to use.
     positions = generate_positions(0,9)
-    #print(positions)
     ship_hitted = []
     
     #initialize the pygame
     pygame.init()
 
-    #Set up the game screen size
+    #Set up the game screen size and other parameters
     screen = pygame.display.set_mode((648, 648))
     dim = 25
     gap = 3
 
-    #Title and Icon
+    #Set up the title and Icon for this game
     pygame.display.set_caption("Arthur's Battleship")
     Icon = pygame.image.load("battleship.png")
     pygame.display.set_icon(Icon)
@@ -371,41 +557,34 @@ if __name__ == "__main__":
     
     player_place_ship(player1)
     draw_board()
-    #print(grid1)
     pygame.display.update()
     computer_place_ship(computer)
     pygame.display.update()
 
-    #game running loop
-    running = True
-    player_turn = True
+    #game running infinite loop
+    running = True#variable for game running
+    player_turn = True#variable for switching the turn between player and computer
     while running:
         while player_turn is True:
-            #print('player turn')
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    #running = False
                     pygame.quit()
                     exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     position = pygame.mouse.get_pos()
-                    player_make_move(position, sea2, grid2, grid1)
+                    player_make_move(position, sea2, grid2)
                     if computer.check_ships():
                         game_result(player1)
                         break
                     player_turn = False
-                    #draw_board()
         while player_turn is False:
-            #print('computer turn')
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    #running = False
                     pygame.quit()
                     exit()
-                [ship_hitted, positions] = deepcopy(computer_turn(player1, sea1, grid1, grid2, positions, ship_hitted))
+                [ship_hitted, positions] = deepcopy(computer_turn(sea1, grid1, positions, ship_hitted))
                 if player1.check_ships():
                     game_result(computer)
-                    break
                 player_turn = True
                     
         for event in pygame.event.get():
