@@ -236,13 +236,18 @@ def generate_positions(x,y):
     positions = []
     for p in position:
         pos = list(p)
-        positions.append(pos) 
+        positions.append(pos)
+    for i in range(10):
+        positions.append([i,i])
     return positions
 
+def intersection_list_of_list(list1, list2):
+    list3 = [sublist for sublist in list1 if sublist in list2]
+    return list3
 
 def subtract_hitted_position(positions, ship_hitted):
-    #print(positions)
-    #print(ship_hitted[-1])
+    print(positions)
+    print(ship_hitted[-1])
     new_positions = []
     for i in range(len(positions)):
         #print(positions[i])
@@ -250,10 +255,6 @@ def subtract_hitted_position(positions, ship_hitted):
             new_positions.append(positions[i])
     return new_positions
             
-def intersection_list_of_list(list1, list2):
-    list3 = [sublist for sublist in list1 if sublist in list2]
-    return list3
-    
 
 def find_valid_neighbor(positions, ship_hitted):
     valid_neighbor = []
@@ -265,6 +266,7 @@ def find_valid_neighbor(positions, ship_hitted):
         [ship_hitted[-1][0], ship_hitted[-1][1] - 1],
         [ship_hitted[-1][0], ship_hitted[-1][1] + 1]]
         valid_neighbor = intersection_list_of_list(positions, neighbor)
+        print(valid_neighbor)
     return valid_neighbor
     
 
@@ -275,8 +277,8 @@ def computer_turn(player1, sea1, grid1, grid2, positions, ship_hitted):
     
     if len(valid_neighbor) == 0:
         position = random.choice(positions)
-        column = position[0]
-        row = position[1]
+        row = position[0]
+        column = position[1]
         sea1[[row, column]].open()
         if isinstance(sea1[row, column].content, Part_of_ship):
             grid1[row][column] = 1
@@ -287,6 +289,8 @@ def computer_turn(player1, sea1, grid1, grid2, positions, ship_hitted):
         if grid1[row][column] == 1:
             print('Computer hitted!')
             ship_hitted.append([row, column])
+            print("1")
+            print(ship_hitted)
             positions = deepcopy(subtract_hitted_position(positions, ship_hitted))
         if grid1[row][column] == 2:
             print('Computer missed!')
@@ -296,8 +300,8 @@ def computer_turn(player1, sea1, grid1, grid2, positions, ship_hitted):
             
     if len(valid_neighbor) != 0:
         position = random.choice(valid_neighbor)
-        column = position[0]
-        row = position[1]
+        row = position[0]
+        column = position[1]
         sea1[[row, column]].open()
         if isinstance(sea1[row, column].content, Part_of_ship):
             grid1[row][column] = 1
@@ -307,7 +311,10 @@ def computer_turn(player1, sea1, grid1, grid2, positions, ship_hitted):
         pygame.display.update()
         if grid1[row][column] == 1:
             print('Computer hitted!')
+            #print([row,column])
             ship_hitted.append([row, column])
+            print('2')
+            print(ship_hitted)
             positions = deepcopy(subtract_hitted_position(positions, ship_hitted))
         if grid1[row][column] == 2:
             print('Computer missed!')
@@ -315,19 +322,6 @@ def computer_turn(player1, sea1, grid1, grid2, positions, ship_hitted):
             positions = deepcopy(subtract_hitted_position(positions, ship_missed))
         return [ship_hitted, positions]
         
-    
-def computer_open_cell(cell, grid1, sea1, grid2):
-    sea1[cell].open()
-    if isinstance(sea1[cell].content, Part_of_ship):
-        grid1[cell[0]][cell[1]] = 3
-        draw_board()
-        pygame.display.update()
-        return True
-    else:
-        grid1[cell[0]][cell[1]] = 4
-        draw_board()
-        pygame.display.update()
-        return True
     
 if __name__ == "__main__":
     #Set up the colors    
@@ -348,7 +342,7 @@ if __name__ == "__main__":
     sea2 = computer.sea
     
     positions = generate_positions(0,9)
-    print(positions)
+    #print(positions)
     ship_hitted = []
     
     #initialize the pygame
