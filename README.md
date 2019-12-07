@@ -15,7 +15,7 @@ Player should first drag the ship to the desired position then click the mouse b
 The default direction of ships are set to horizontal, player could change to vertical by clicking any key on the keyboard.  
 If a player places the ships out of the player's sea or on the position overlapped with an already exist position. A remind will be shown in the console.  
 Once player and computer finishing the placement of the ships, the player could choose a block in computer's sea to blast by clicking that block. Then computer will response to player's sea.  
-![Image text](https://github.com/arthurzhang434/Software_Final_Project_Battleship/blob/master/comment.png)  
+![Image text](https://github.com/arthurzhang434/Software_Final_Project_Battleship/blob/master/gamescreen.png)  
 Figure 2: The example of the game interface. Grey blocks represent player's ships. Red blocks represent hitted ships. Green blocks represent missed shots.
 
 
