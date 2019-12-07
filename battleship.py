@@ -8,6 +8,8 @@ Created on Fri Nov 15 17:12:41 2019
 
 import pygame
 import random
+from itertools import permutations
+from copy import deepcopy
 
 class Field:
     def __init__(self, *content):
@@ -228,30 +230,90 @@ def player_make_move(position, sea2, grid2, grid1, player_turn):#玩家炸船
 
     return player_turn                    
 
-def find_neighbours(field):
-    north = [field[0] - 1, field[1]]
-    south = [field[0] + 1, field[1]]
-    east = [field[0], field[1] + 1]
-    west = [field[0], field[1] - 1]
-    return [north, south, east, west]
+def generate_positions(x,y):
+    size = range(x,y)
+    position = permutations(size, 2)
+    positions = []
+    for p in position:
+        pos = list(p)
+        positions.append(pos) 
+    return positions
 
-def computer_turn1(player1, sea1, grid1, grid2):
-    column = random.randint(0,9)
-    row = random.randint(0,9)
-    sea1[[row, column]].open()
-    if isinstance(sea1[row, column].content, Part_of_ship):
-        grid1[row][column] = 1
-    else:
-        grid1[row][column] = 2
-        
-    draw_board()
-    pygame.display.update()
-    if grid1[row][column] == 1:
-        print('Computer hitted!')
-    if grid1[row][column] == 2:
-        print('Computer missed!')
-        
-    return True
+
+def subtract_hitted_position(positions, ship_hitted):
+    #print(positions)
+    #print(ship_hitted[-1])
+    new_positions = []
+    for i in range(len(positions)):
+        #print(positions[i])
+        if positions[i] != ship_hitted[-1]:
+            new_positions.append(positions[i])
+    return new_positions
+            
+def intersection_list_of_list(list1, list2):
+    list3 = [sublist for sublist in list1 if sublist in list2]
+    return list3
+    
+
+def find_valid_neighbor(positions, ship_hitted):
+    valid_neighbor = []
+    if len(ship_hitted) == 0:
+        valid_neighbor = []
+    if len(ship_hitted) != 0:
+        neighbor = [[ship_hitted[-1][0] - 1, ship_hitted[-1][1]],
+         [ship_hitted[-1][0] + 1, ship_hitted[-1][1]],
+        [ship_hitted[-1][0], ship_hitted[-1][1] - 1],
+        [ship_hitted[-1][0], ship_hitted[-1][1] + 1]]
+        valid_neighbor = intersection_list_of_list(positions, neighbor)
+    return valid_neighbor
+    
+
+
+def computer_turn(player1, sea1, grid1, grid2, positions, ship_hitted):
+    ship_missed = []
+    valid_neighbor = find_valid_neighbor(positions, ship_hitted)
+    
+    if len(valid_neighbor) == 0:
+        position = random.choice(positions)
+        column = position[0]
+        row = position[1]
+        sea1[[row, column]].open()
+        if isinstance(sea1[row, column].content, Part_of_ship):
+            grid1[row][column] = 1
+        else:
+            grid1[row][column] = 2
+        draw_board()
+        pygame.display.update()
+        if grid1[row][column] == 1:
+            print('Computer hitted!')
+            ship_hitted.append([row, column])
+            positions = deepcopy(subtract_hitted_position(positions, ship_hitted))
+        if grid1[row][column] == 2:
+            print('Computer missed!')
+            ship_missed.append([row, column])
+            positions = deepcopy(subtract_hitted_position(positions, ship_missed))
+        return [ship_hitted, positions]
+            
+    if len(valid_neighbor) != 0:
+        position = random.choice(valid_neighbor)
+        column = position[0]
+        row = position[1]
+        sea1[[row, column]].open()
+        if isinstance(sea1[row, column].content, Part_of_ship):
+            grid1[row][column] = 1
+        else:
+            grid1[row][column] = 2
+        draw_board()
+        pygame.display.update()
+        if grid1[row][column] == 1:
+            print('Computer hitted!')
+            ship_hitted.append([row, column])
+            positions = deepcopy(subtract_hitted_position(positions, ship_hitted))
+        if grid1[row][column] == 2:
+            print('Computer missed!')
+            ship_missed.append([row, column])
+            positions = deepcopy(subtract_hitted_position(positions, ship_missed))
+        return [ship_hitted, positions]
         
     
 def computer_open_cell(cell, grid1, sea1, grid2):
@@ -266,45 +328,6 @@ def computer_open_cell(cell, grid1, sea1, grid2):
         draw_board()
         pygame.display.update()
         return True
-    
-def computer_turn(player1, sea1, grid1, grid2):#电脑炸船
-    closed_fields = []
-    hit_ships = []
-
-    for row in range(10):
-        for column in range(10):
-            fill = sea1[[row, column]].content
-            if grid1[row][column] in [0, 5]:#sea of unhitted ship
-                closed_fields.append([row, column])
-            elif grid1[row][column] == 3 and not fill.is_part_of_sunk_ship():# hitted ship
-                hit_ships.append([row, column])
-
-    for field in hit_ships:
-        neighbours = find_neighbours(field)
-        up = neighbours[0]
-        down = neighbours[1]
-        left = neighbours[2]
-        right = neighbours[3]
-
-        cell = None
-
-        if up in hit_ships and down in closed_fields:
-            cell = down
-        elif down in hit_ships and up in closed_fields:
-            cell = up
-        elif left in hit_ships and right in closed_fields:
-            cell = right
-        elif right in hit_ships and left in closed_fields:
-            cell = left
-
-        if cell:
-            return computer_open_cell(cell, grid1, sea1, grid2)
-
-    for field in hit_ships:
-        for cell in find_neighbours(field):
-            if cell in closed_fields:
-                return computer_open_cell(cell, grid1, sea1, grid2)
-
     
 if __name__ == "__main__":
     #Set up the colors    
@@ -323,6 +346,10 @@ if __name__ == "__main__":
     sea1 = player1.sea#set up the sea (home) for player1, class object
     computer = Player(10,5)
     sea2 = computer.sea
+    
+    positions = generate_positions(0,9)
+    print(positions)
+    ship_hitted = []
     
     #initialize the pygame
     pygame.init()
@@ -352,15 +379,6 @@ if __name__ == "__main__":
     running = True
     player_turn = True
     while running:
-        #player_turn = True
-        #draw_board()
-        #pygame.display.update()
-        #player_place_ship(player1)
-        #draw_board()
-        #print(grid1)
-        #pygame.display.update()
-        #computer_place_ship(computer)
-        #pygame.display.update()
         while player_turn is True:
             #print('player turn')
             for event in pygame.event.get():
@@ -379,8 +397,9 @@ if __name__ == "__main__":
                     #running = False
                     pygame.quit()
                     exit()
-                #player_turn = computer_turn(player1, sea1, grid1, grid2)
-                player_turn = computer_turn1(player1, sea1, grid1, grid2)
+                [ship_hitted, positions] = deepcopy(computer_turn(player1, sea1, grid1, grid2, positions, ship_hitted))
+                player_turn = True
+                #player_turn = computer_turn(player1, sea1, grid1, grid2, positions)
                     
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
