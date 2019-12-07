@@ -6,4 +6,10 @@ The sizes of different ships for each player are shown in Figure 1.
 Each player has a chance to choose a block to blast, the first player blasts all the ships from
 the opponent is the winner.  
 ![Image text](https://github.com/arthurzhang434/Software_Final_Project_Battleship/blob/master/ships.png)<b>  
-Figure 1: Each player has 5 ships.
+Figure 1: Each player has 5 ships.  
+The Graphical User Interface (GUI) is made through Pygame.
+In order to run this code, Pygame 1.9 or later must be installed.  
+The interface of this battleship game is shown in Figure 2.
+Once enter the game, player could place 5 ships one by one on the left grid which represents the player's sea.  
+To place the ships, player should first drag the ship to the desired position then click the mouse button to place down the ship.  
+
