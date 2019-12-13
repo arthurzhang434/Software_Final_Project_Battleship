@@ -283,7 +283,8 @@ def find_valid_place(position, ship_size, direction, sea2):
 
 def computer_place_ship(computer):
     '''
-    The function for computer to randomly place the ships on the valid grids.
+    The function for computer to place the ships on the valid grids. 
+    If there is currently no valid grid, computer will randomly choose a grid.
     
     **Parameters**
     
