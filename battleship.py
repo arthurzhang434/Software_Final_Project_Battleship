@@ -20,6 +20,8 @@ from copy import deepcopy
 
 class Field:
     '''
+    author: <Victoria Hristova>
+    availability: <https://github.com/victoria92/battleship>
     A Field object contains the information of each player's grids.
     '''
     def __init__(self, *content):
@@ -36,6 +38,8 @@ class Field:
 
 class Part_of_ship:
     '''
+    author: <Victoria Hristova>
+    availability: <https://github.com/victoria92/battleship>
     A Part of ship object, latter being called to check whether a position 
     selected is a part of ship.
     
@@ -53,6 +57,8 @@ class Part_of_ship:
 
 class Ship:
     '''
+    author: <Victoria Hristova>
+    availability: <https://github.com/victoria92/battleship>
     A Ship object has the property to check the valid grid when placing the
     ships and check if the ship is sunk.
     
@@ -83,6 +89,8 @@ class Ship:
 
 class Sea:
     '''
+    author: <Victoria Hristova>
+    availability: <https://github.com/victoria92/battleship>
     A Field object contains the information of each player's grids on screen.
     '''
     def __init__(self, size=10):
@@ -110,6 +118,8 @@ class Sea:
 
 class Player:
     '''
+    author: <Victoria Hristova>
+    availability: <https://github.com/victoria92/battleship>
     A Player object contains the information of each player's ships.
     Has the property to put the ship in a specific coordinate
     and check if the all ship is sunk or not.
@@ -131,6 +141,10 @@ class Player:
         return True
 
 class PlacementError(Exception):
+    '''
+    author: <Victoria Hristova>
+    availability: <https://github.com/victoria92/battleship>
+    '''
     pass
 
 def draw_board():
