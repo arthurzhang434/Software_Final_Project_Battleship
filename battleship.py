@@ -4,6 +4,13 @@
 Created on Fri Nov 15 17:12:41 2019
 
 @author: huaizhong
+
+This code contains a game of battleship played by Graphical User Interface (GUI),
+The part of user defined classes and objects (Object Oriented Programming) is 
+citing from https://github.com/victoria92/battleship, and slight changes have been
+made to adapt this code.
+
+
 """
 
 import pygame
