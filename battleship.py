@@ -249,7 +249,7 @@ def player_place_ship(player):
                 pygame.quit()
                 exit()
 
-def find_valid_place(position, ship_size, direction, sea2):#电脑检查是否可以放船
+def find_valid_place(position, ship_size, direction, sea2):
     '''
     The function for computer check the valid grid to place the ships.
     
@@ -421,34 +421,24 @@ def find_valid_neighbor(positions, ship_hitted):
     valid_neighbor = []
     if len(ship_hitted) == 0:
         valid_neighbor = []
-    if len(ship_hitted) == 1 and len(ship_missed) == 0:
+        
+    if len(ship_hitted) == 1:
         neighbor = [[ship_hitted[-1][0] - 1, ship_hitted[-1][1]],
          [ship_hitted[-1][0] + 1, ship_hitted[-1][1]],
         [ship_hitted[-1][0], ship_hitted[-1][1] - 1],
         [ship_hitted[-1][0], ship_hitted[-1][1] + 1]]
         valid_neighbor = intersection_list_of_list(positions, neighbor)
-        print('VALID IS')
-        print(valid_neighbor)
+
     if len(ship_hitted) > 1:
         y_movement = ship_hitted[-1][0] - ship_hitted[-2][0]
         x_movement = ship_hitted[-1][1] - ship_hitted[-2][1]
         neighbor = [[ship_hitted[-1][0] + y_movement, ship_hitted[-1][1] + x_movement]]
-        print('neighbor is')
-        print(neighbor)
         valid_neighbor = intersection_list_of_list(positions, neighbor)
-        print('valid is')
-        print(valid_neighbor)
         if len(valid_neighbor) == 0:
-            neighbor = [[ship_hitted[0][0] - y_movement, ship_hitted[0][1] - x_movement]]
-            print('ymove')
-            print(y_movement)
-            print('xmove')
-            print(x_movement)
+            ship_hitted.reverse()
+            neighbor = [[ship_hitted[-1][0] - y_movement, ship_hitted[-1][1] - x_movement]]
             valid_neighbor = intersection_list_of_list(positions, neighbor)
-            print('NEIGHBOR is')
-            print(neighbor)
-            print('Valid is')
-            print(valid_neighbor)
+
     return valid_neighbor
     
 
@@ -582,9 +572,7 @@ if __name__ == "__main__":
     
     #generate the list of positions and ship_hitted for computer to use.
     positions = generate_positions(0,10)
-    print(positions)
     ship_hitted = []
-    ship_missed = []
     
     #initialize the pygame
     pygame.init()
@@ -633,8 +621,6 @@ if __name__ == "__main__":
                     pygame.quit()
                     exit()
                 [ship_hitted, positions] = deepcopy(computer_turn(sea1, grid1, positions, ship_hitted))
-                print('ship_hitted is')
-                print(ship_hitted)
                 if player1.check_ships():
                     game_result(computer)
                 player_turn = True
